@@ -68,6 +68,18 @@
 ### Documentazione
 >Per la documentazione basta cercarla su internet col nome della libreria, come in questo caso sklearn.
 
+## Sequenza imputazione valori mancanti
+>1. **Caricamento** `tyu`
+>2. **Ispezione** (per vedere se ci sono dati nulli)
+>5. **Train test split**
+>3. **Encoding numerico** delle feature categoriche (Lobial Encoder, possibile rimandarlo anche a dopo)
+>4. **Imputazione** (feature per feature) [quando abbiamo colonne estremamente sparse, anche queste possono essere "scartate", se dobbiamo buttare righe o colonne meglio farlo nell'Ispezione]
+Fase 3 e fase 4 possono essere scambiate
+>5. **Scaling** (ogni feature viene scalata per i fatti suoi, da fare solo se possibile)
+>6. **Correlazione per le feature multicollineari**
+>7. **Feature selection** (score o tentativi di classificazione/clustering)
+Le feature risultanti saranno profondamente diverse da quelle di partenza, le quali non vanno mai dimenticate per garantire la spiegabilità del modello usato e delle previsioni fatte (da quali feature dipendono le previsioni)
+
 
 
 
