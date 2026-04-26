@@ -1,0 +1,92 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+from sklearn.feature_selection import SelectKBest, f_classif
+from sklearn.linear_model import LogisticRegression
+from sklearn.pipeline import Pipeline
+from numpy import hstack
+from sklearn.metrics import accuracy_score
+import numpy as np
+
+# Caricamento dati
+df = pd.read_csv('C:\\Users\\pcdis\\Desktop\\Università\\BigData2\\heart_disease_uci.csv', sep=";")
+X = df.drop(['num', 'id'], axis=1)
+y = df['num']
+
+
+#Split Test 
+X_tr, X_te, y_tr, y_te = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=df['dataset']
+)
+
+#INTEGRIAMO I PUNTI 2, 3 e 4
+
+# Definizione colonne
+variabili_categoriche = ['sex', 'dataset', 'cp', 'fbs', 'restecg', 'exang', 'slope', 'thal']
+variabili_numeriche = ['age', 'trestbps', 'chol', 'thalch', 'oldpeak', 'ca']
+
+pipe_numerica = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler()) #Lo scaling è caldament consigliato per f_classif
+])
+
+pipe_categorica = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')), #Imputazione PRIMA
+    ('encoder', OneHotEncoder(handle_unknown='ignore', sparse_output = False)) #Encoding DOPO
+])
+
+preprocessore = ColumnTransformer([
+    ('num', pipe_numerica, variabili_numeriche),
+    ('cat', pipe_categorica, variabili_categoriche)
+])
+# Aggiungiamo il classificatore alla pipeline finale
+final_pipe = Pipeline([
+    ('prep', preprocessore),
+    ('select', SelectKBest(score_func=f_classif, k=10)),
+    ('model', LogisticRegression(max_iter = 1000))
+])
+'''
+Quando una Pipeline termina con un modello (il classificatore), 
+non devi più usare fit_transform, ma semplicemente fit per addestrare
+e predict per testare. Usando fit_transform su una pipeline che finisce 
+con un modello, il codice andrebbe in errore perché il modello non "trasforma" i dati,
+ li "predice".
+
+Questo è quello che hai fatto nella prima esercitazione
+# Applichiamo tutto
+X_tr_selected = final_pipe.fit_transform(X_tr, y_tr)
+X_te_selected = final_pipe.transform(X_te)
+
+print(pd.DataFrame(X_tr_selected).head())
+'''
+#2. Addestramento(AL POSTO DI TRANSFORM)
+# Questo comando esegue tutto: imputer -> scaler -> encoding -> selezione -> training
+final_pipe.fit(X_tr, y_tr)
+
+#2.5 PER INTERPRETARE BENE UN MODELLO È BENE SAPERE QUALI SONO QUESTE 10 VARIABILI
+# Recuperiamo i nomi delle colonne dopo il OneHotEncoder
+nomi_colonne_cat = final_pipe.named_steps['prep'].transformers_[1][1]\
+                   .named_steps['encoder'].get_feature_names_out(variabili_categoriche)
+tutti_i_nomi = list(variabili_numeriche) + list(nomi_colonne_cat)
+
+# Recuperiamo gli indici selezionati da SelectKBest
+mask = final_pipe.named_steps['select'].get_support()
+variabili_selezionate = [tutti_i_nomi[i] for i, selezionata in enumerate(mask) if selezionata]
+
+print("Le 10 variabili più importanti selezionate sono:")
+print(variabili_selezionate)
+
+
+#3. Prediciamo il modello
+y_pred = final_pipe.predict(X_te)
+
+#4. Calcoliamo l'accuratezza
+accuratezza = accuracy_score(y_te, y_pred)
+
+print(f"Accuratezza del modello: {accuratezza:.2%}" )
+
+#Quindi è cambiato lo split, 
+
+
