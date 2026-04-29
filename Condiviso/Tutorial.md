@@ -80,7 +80,7 @@ Fase 3 e fase 4 possono essere scambiate
 >7. **Feature selection** (score o tentativi di classificazione/clustering)
 Le feature risultanti saranno profondamente diverse da quelle di partenza, le quali non vanno mai dimenticate per garantire la spiegabilità del modello usato e delle previsioni fatte (da quali feature dipendono le previsioni)
 
-# DBSCAN
+# DBSCAN CHE COS'È?
 
 * **DBSCAN**: È un algoritmo di clustering che, a differenza di altri, non cerca di fare gruppi "rotondi", ma cerca zone ad alta densità (come stormi di uccelli). I punti che rimangono isolati li classifica come "Rumore" (assegnando loro l'etichetta `-1`).
 
