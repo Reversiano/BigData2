@@ -80,6 +80,74 @@ Fase 3 e fase 4 possono essere scambiate
 >7. **Feature selection** (score o tentativi di classificazione/clustering)
 Le feature risultanti saranno profondamente diverse da quelle di partenza, le quali non vanno mai dimenticate per garantire la spiegabilità del modello usato e delle previsioni fatte (da quali feature dipendono le previsioni)
 
+# DBSCAN
+
+* **DBSCAN**: È un algoritmo di clustering che, a differenza di altri, non cerca di fare gruppi "rotondi", ma cerca zone ad alta densità (come stormi di uccelli). I punti che rimangono isolati li classifica come "Rumore" (assegnando loro l'etichetta `-1`).
+
+* **Griglia di ricerca (Grid Search)**: Ti sta chiedendo di fare un ciclo `for` per provare tutte le combinazioni possibili tra i parametri forniti (3 valori di Eps moltiplicati per 3 valori di MinPts = 9 prove in totale).
+   * **Eps**: È il "raggio" visivo di un punto.
+   * **MinPts**: È il numero minimo di "vicini" che un punto deve avere in quel raggio per poter formare un cluster.
+
+
+# Implementazione Standard DBSCAN con Grid Search
+
+## Codice Python Completo
+
+```python
+from sklearn.cluster import DBSCAN
+from sklearn.metrics import accuracy_score
+from sklearn.metrics.cluster import contingency_matrix
+import numpy as np
+import pandas as pd
+
+#1. Griglia di ricerca
+eps_values = [0.5, 1.5, 2.0]
+min_pts_values = [5, 10, 20]
+
+#2. Funzione per la valutazione
+def valuta_dbscan(X, y_true, eps_val, min_pts_val, nome_set):
+    #Si inizializza il DBSCAN
+    db = DBSCAN(eps = eps_val, min_samples = min_pts_val)
+    #Applichiamo il fit_predict 
+    cluster_labels = db.fit_predict(X)
+    #Calcoliamo quanti cluster utili e quanto rumore c'è 
+    n_cluster = len(set(cluster_labels)) - (1 if -1 in cluster_labels else 0)
+    n_noise = list(cluster_labels).count(-1)
+
+    #Se crea 0 cluster (solo rumore), ti fermi
+    if n_cluster == 0:
+        print(f"[{nome_set}] Eps={eps_val}, MinPts={min_pts_val} -> Modello fallito (0 Cluster, {n_noise} punti di Rumore)")
+    #Calcolo purezza
+    mat = contingency_matrix(y_true, cluster_labels)
+    purezza = np.sum(np.amax(mat, axis = 0))/ np.sum(mat)
+
+    #Calcolo ACCURACY
+    y_pred = np.zeros_like(cluster_labels)
+
+    for cluster in set(cluster_labels):
+        mask = (cluster_labels == cluster)
+        data_in_cluster = y_true[mask]
+
+        if len(data_in_cluster) > 0:
+            # Trucco Pandas: .value_counts().idxmax() prende l'etichetta vera più frequente
+            classe_maggioritaria = pd.Series(data_in_cluster).value_counts().idxmax()
+            y_pred[mask] = classe_maggioritaria
+            
+    accuracy = accuracy_score(y_true, y_pred)
+    
+    print(f"[{nome_set}] Eps={eps_val}, MinPts={min_pts_val} | Cluster: {n_cluster}, Rumore: {n_noise} | Purezza: {purezza:.2%} | Accuracy: {accuracy:.2%}")
+
+# 3. Esecuzione della griglia (i 9 tentativi)
+print("=== INIZIO RICERCA PARAMETRI DBSCAN ===\n")
+for e in eps_values:
+    for m in min_pts_values:
+        valuta_dbscan(X_tr_clean, y_tr, e, m, "TRAIN")
+        valuta_dbscan(X_te_clean, y_te, e, m, "TEST ")
+        print("-" * 80)
+```
+
+
+
 
 
 
