@@ -84,7 +84,7 @@ Le feature risultanti saranno profondamente diverse da quelle di partenza, le qu
 
 * **DBSCAN**: È un algoritmo di clustering che, a differenza di altri, non cerca di fare gruppi "rotondi", ma cerca zone ad alta densità (come stormi di uccelli). I punti che rimangono isolati li classifica come "Rumore" (assegnando loro l'etichetta `-1`).
 
-* **Griglia di ricerca (Grid Search)**: Ti sta chiedendo di fare un ciclo `for` per provare tutte le combinazioni possibili tra i parametri forniti (3 valori di Eps moltiplicati per 3 valori di MinPts = 9 prove in totale).
+* **Griglia di ricerca (Grid Search)**: Ti sta chiedendo di fare un ciclo `for` per provare tutte le combinazioni possibili tra i parametri forniti (n valori di Eps moltiplicati per m valori di MinPts = n*m prove in totale).
    * **Eps**: È il "raggio" visivo di un punto.
    * **MinPts**: È il numero minimo di "vicini" che un punto deve avere in quel raggio per poter formare un cluster.
 
